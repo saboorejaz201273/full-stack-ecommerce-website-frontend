@@ -1,0 +1,23 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: #F0F2F5;
+  color: #1C1C1C;
+}
+
+a {
+  text-decoration: none;
+}
+
+button {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+input, select {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}

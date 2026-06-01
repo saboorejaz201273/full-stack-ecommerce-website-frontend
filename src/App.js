@@ -1,0 +1,84 @@
+import React, { useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Home from './pages/Home';
+import Products from './pages/Products';
+import ProductDetail from './pages/ProductDetail';
+import Cart from './pages/Cart';
+
+function App() {
+  const [cart, setCart] = useState([]);
+  const [toast, setToast] = useState(null);
+
+  const addToCart = (product, qty = 1, size = '') => {
+    const key = `${product.id}-${size}`;
+    setCart(prev => {
+      const exists = prev.find(i => i.key === key);
+      if (exists) {
+        return prev.map(i =>
+          i.key === key ? { ...i, qty: i.qty + qty } : i
+        );
+      }
+      return [...prev, { ...product, qty, size, key }];
+    });
+    showToast('Added to cart!');
+  };
+
+  const removeFromCart = (key) => {
+    setCart(prev => prev.filter(i => i.key !== key));
+  };
+
+  const updateQty = (key, delta) => {
+    setCart(prev =>
+      prev.map(i =>
+        i.key === key ? { ...i, qty: Math.max(1, i.qty + delta) } : i
+      )
+    );
+  };
+
+  const showToast = (msg) => {
+    setToast(msg);
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const cartCount = cart.reduce((sum, item) => sum + item.qty, 0);
+
+  return (
+    <BrowserRouter>
+      <Navbar cartCount={cartCount} />
+      <Routes>
+        <Route path="/" element={<Home addToCart={addToCart} />} />
+        <Route path="/products" element={<Products addToCart={addToCart} />} />
+        <Route path="/products/:id" element={<ProductDetail addToCart={addToCart} />} />
+        <Route path="/cart" element={
+          <Cart
+            cart={cart}
+            removeFromCart={removeFromCart}
+            updateQty={updateQty}
+          />
+        } />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+      <Footer />
+      {toast && (
+        <div style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          background: '#2B74D8',
+          color: '#fff',
+          padding: '12px 20px',
+          borderRadius: 8,
+          fontSize: 14,
+          fontWeight: 600,
+          zIndex: 999
+        }}>
+          ✓ {toast}
+        </div>
+      )}
+    </BrowserRouter>
+  );
+}
+
+export default App;
