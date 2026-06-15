@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faCartShopping, faUser, faMagnifyingGlass, faBars } from '@fortawesome/free-solid-svg-icons';
 import { faFacebookF } from '@fortawesome/free-brands-svg-icons';
 
-function Navbar({ cartCount }) {
+function Navbar({ cartCount, user, logout })  {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
 
@@ -165,14 +165,21 @@ function Navbar({ cartCount }) {
           </Link>
 
           {/* Account */}
-          <div
-            style={{ textAlign: 'center', cursor: 'pointer', color: '#333' }}
-            onMouseEnter={e => e.currentTarget.style.color = '#2B74D8'}
-            onMouseLeave={e => e.currentTarget.style.color = '#333'}
-          >
-            <FontAwesomeIcon icon={faUser} style={{ fontSize: 20 }} />
-            <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>Account</div>
-          </div>
+          {user ? (
+  <div style={{ textAlign: 'center', cursor: 'pointer' }}
+    onClick={logout}
+  >
+    <FontAwesomeIcon icon={faUser} style={{ fontSize: 20, color: '#2B74D8' }} />
+    <div style={{ fontSize: 10, color: '#2B74D8', marginTop: 2, fontWeight: 600 }}>
+      {user.name.split(' ')[0]}
+    </div>
+  </div>
+) : (
+  <Link to="/login" style={{ textDecoration: 'none', textAlign: 'center', color: '#333' }}>
+    <FontAwesomeIcon icon={faUser} style={{ fontSize: 20 }} />
+    <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>Login</div>
+  </Link>
+)}
         </div>
       </nav>
 

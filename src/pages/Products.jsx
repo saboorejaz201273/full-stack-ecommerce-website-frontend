@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../components/ProductCard';
+import { getProducts } from '../services/api';
 import PRODUCTS from '../data/products';
 
 function Products({ addToCart }) {
@@ -8,20 +9,33 @@ function Products({ addToCart }) {
   const searchQuery = searchParams.get('search') || '';
   const [sort, setSort] = useState('default');
   const [filterCat, setFilterCat] = useState([]);
+  const [products, setProducts] = useState(PRODUCTS);
+  const [loading, setLoading] = useState(true);
 
-  const categories = [...new Set(PRODUCTS.map(p => p.category))];
+  useEffect(() => {
+    getProducts({ search: searchQuery })
+      .then(res => {
+        if (res.data.products && res.data.products.length > 0) {
+          setProducts(res.data.products);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log('Using local data:', err);
+        setLoading(false);
+      });
+  }, [searchQuery]);
 
-  let filtered = PRODUCTS.filter(p => {
-    const matchSearch = !searchQuery ||
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.category.toLowerCase().includes(searchQuery.toLowerCase());
+  const categories = [...new Set(products.map(p => p.category))];
+
+  let filtered = products.filter(p => {
     const matchCat = filterCat.length === 0 || filterCat.includes(p.category);
-    return matchSearch && matchCat;
+    return matchCat;
   });
 
-  if (sort === 'asc') filtered = [...filtered].sort((a,b) => a.price - b.price);
-  if (sort === 'desc') filtered = [...filtered].sort((a,b) => b.price - a.price);
-  if (sort === 'rating') filtered = [...filtered].sort((a,b) => b.rating - a.rating);
+  if (sort === 'asc') filtered = [...filtered].sort((a, b) => a.price - b.price);
+  if (sort === 'desc') filtered = [...filtered].sort((a, b) => b.price - a.price);
+  if (sort === 'rating') filtered = [...filtered].sort((a, b) => b.rating - a.rating);
 
   const toggleCat = (cat) => {
     setFilterCat(prev =>
@@ -29,22 +43,31 @@ function Products({ addToCart }) {
     );
   };
 
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'center', height: '50vh',
+        fontSize: 18, color: '#2B74D8',
+      }}>
+        Loading products...
+      </div>
+    );
+  }
+
   return (
     <div style={{ background: '#F0F2F5', minHeight: '100vh' }}>
       <div style={{ display: 'flex', gap: 20, padding: '24px 40px' }}>
 
-        {/* Sidebar Filter */}
+        {/* Sidebar */}
         <aside style={{ width: 200, flexShrink: 0 }}>
           <div style={{
-            background: '#fff',
-            border: '1px solid #E0E0E0',
-            borderRadius: 8,
-            overflow: 'hidden',
+            background: '#fff', border: '1px solid #E0E0E0',
+            borderRadius: 8, overflow: 'hidden',
           }}>
             <div style={{
               background: '#2B74D8', color: '#fff',
-              padding: '12px 16px',
-              fontWeight: 700, fontSize: 13,
+              padding: '12px 16px', fontWeight: 700, fontSize: 13,
             }}>
               Filter by Category
             </div>
@@ -67,9 +90,8 @@ function Products({ addToCart }) {
           </div>
         </aside>
 
-        {/* Main Products */}
+        {/* Main */}
         <div style={{ flex: 1 }}>
-          {/* Top bar */}
           <div style={{
             display: 'flex', justifyContent: 'space-between',
             alignItems: 'center', marginBottom: 16,
@@ -84,9 +106,8 @@ function Products({ addToCart }) {
               value={sort}
               onChange={e => setSort(e.target.value)}
               style={{
-                border: '1px solid #E0E0E0',
-                borderRadius: 6, padding: '6px 12px',
-                fontSize: 13, outline: 'none',
+                border: '1px solid #E0E0E0', borderRadius: 6,
+                padding: '6px 12px', fontSize: 13, outline: 'none',
               }}
             >
               <option value="default">Default Sorting</option>
@@ -96,7 +117,6 @@ function Products({ addToCart }) {
             </select>
           </div>
 
-          {/* Product Grid */}
           {filtered.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '80px 0', color: '#999' }}>
               <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
@@ -105,12 +125,12 @@ function Products({ addToCart }) {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
               gap: 16,
             }}>
               {filtered.map(product => (
                 <ProductCard
-                  key={product.id}
+                  key={product._id || product.id}
                   product={product}
                   addToCart={addToCart}
                 />

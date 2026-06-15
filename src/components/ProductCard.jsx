@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { addToWishlist } from '../services/api';
 
 function ProductCard({ product, addToCart }) {
   const navigate = useNavigate();
+  const [wishlisted, setWishlisted] = useState(false);
   const discount = product.oldPrice
     ? Math.round((1 - product.price / product.oldPrice) * 100)
     : 0;
+
+  const handleWishlist = async (e) => {
+    e.stopPropagation();
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login first!');
+      return;
+    }
+    try {
+      await addToWishlist({ productId: product._id || product.id });
+      setWishlisted(true);
+      setTimeout(() => setWishlisted(false), 2000);
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   return (
     <div
@@ -38,22 +56,24 @@ function ProductCard({ product, addToCart }) {
 
       {/* Wishlist Button */}
       <button
-        onClick={e => e.stopPropagation()}
+        onClick={handleWishlist}
         style={{
           position: 'absolute', top: 8, right: 8,
-          background: '#fff', border: '1px solid #E0E0E0',
+          background: wishlisted ? '#FFECEC' : '#fff',
+          border: `1px solid ${wishlisted ? '#FF3333' : '#E0E0E0'}`,
           borderRadius: '50%', width: 30, height: 30,
           display: 'flex', alignItems: 'center',
           justifyContent: 'center', cursor: 'pointer',
           fontSize: 14, zIndex: 1,
+          transition: 'all 0.2s',
         }}
       >
-        🤍
+        {wishlisted ? '❤️' : '🤍'}
       </button>
 
       {/* Product Image */}
       <div
-        onClick={() => navigate(`/products/${product.id}`)}
+        onClick={() => navigate(`/products/${product._id || product.id}`)}
         style={{
           height: 180,
           overflow: 'hidden',
@@ -125,7 +145,7 @@ function ProductCard({ product, addToCart }) {
 
         {/* Add to Cart Button */}
         <button
-          onClick={() => addToCart(product, 1, product.sizes[0])}
+          onClick={() => addToCart(product, 1, product.sizes?.[0] || '')}
           style={{
             width: '100%',
             background: '#2B74D8',
