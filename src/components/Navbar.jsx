@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHeart, faCartShopping, faUser, faMagnifyingGlass, faBars } from '@fortawesome/free-solid-svg-icons';
-import { faFacebookF } from '@fortawesome/free-brands-svg-icons';
 
 function Navbar({ cartCount, user, logout })  {
   const navigate = useNavigate();
